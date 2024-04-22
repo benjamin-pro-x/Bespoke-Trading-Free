@@ -1,2 +1,77 @@
-def Warmup(self):
+##Ensure that equity is added during initialize
+def __init__(self):
+  self.equity = self.AddEquity("AAPL", Resolution.Daily)
+  self.equity.DataNormalizationMode = DataNormalizationMode.Raw
+
+
+def LiveHistoryRequest(self):
+  ##Pull 20 days of history
+  history = self.History(self.equity.Symbol, 20, Resolution.Daily)
+  ##Sometimes the history request from QC comes up emtpy
+  if not history.empty:
+    ##resetting the index removes the default symbol index
+    history = history.reset_index()
+
+
+##I recommend creating objects in the Jupyter Research environment so instead of 'self' use 'qb'
+qb = QuantBook()
+def CreateNewObject(data, objectName):
+  ##Data is a pandas DataFrame
+  data_csv = pd.DataFrame.to_csv(data)
+  ##Save with objectName string
+  qb.ObjectStore.Save(objectName, data_csv)
+  ##Or save with the project_id to create a folder
+  qb.ObjectStore.Save(f"{qb.project_id}/WarmupData", data_csv)
+
+  ##Double Check that your file is saved
+  for kvp in qb.ObjectStore:
+      print(kvp)
+
+
+def Save3Dobject(org_arr):
+  ##Save original shape to the object store
+  og_shape = org_arr.shape
+  pd_shape = pd.DataFrame(og_shape)
+  ##Get the full file path by looking up the file name
+  bpath = qb.ObjectStore.GetFilePath('shape_warmup')
+  ##Save as .csv to file path
+  pd_shape.to_csv(bpath)
+
+  ##Convert 3D array to 2D array
+  resh_arr = org_arr.reshape(org_arr.shape[0],-1)
+  ##Convert 2D array to pandas DataFrame
+  pd_arr = pd.DataFrame(resh)
+  ##Get the full file path by looking up the file name
+  mypath = qb.ObjectStore.GetFilePath('WarmupData')
+  ##Save as .csv to file path
+  pd_arr.to_csv(mypath)
+
+
+def UnpackData(self, dataName, shapeName):
+	##Get the full file path by looking up the file name
+	mypath = self.ObjectStore.GetFilePath(dataName)
+	bpath = self.ObjectStore.GetFilePath(shapeName)
+
+	##load files
+	sto_pd_arr = pd.read_csv(mypath)
+	sto_pd_shape = pd.read_csv(bpath)
+
+	##Covert back to numpy || delete the index added during conversion
+	new_arr = sto_pd_arr.to_numpy()
+	new_arr = np.delete(new_arr,0,1)
+	lo_shape = sto_pd_shape.to_numpy()
+	lo_shape = np.delete(lo_shape,0,1)
+
+	##Reshape to original
+	final_arr = new_arr.reshape(new_arr.shape[0], new_arr.shape[1] // lo_shape[2][0], lo_shape[2][0])
+	
+
+
+
+
+
+
+
+
+
   
